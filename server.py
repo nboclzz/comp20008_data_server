@@ -27,6 +27,7 @@ def get_original_dataset(id):
     with open(path) as f:
         data = json.load(f)
     return {'data': data}
+
 @app.route('/datasets/original/')
 def get_original_datasets():
     files = os.listdir('data/original')
@@ -35,6 +36,7 @@ def get_original_datasets():
         with open(os.path.join('data/original', file)) as f:
             fields[file[:-5]] = json.load(f)['fields']
     return {'data': fields}
+
 def fetch_data(id, offset):
     r = requests.get(f'https://discover.data.vic.gov.au/api/3/action/datastore_search?offset={offset}&resource_id={id}')
     r = r.json()['result']

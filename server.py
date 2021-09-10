@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, abort
 import requests
 import json
 import os
@@ -36,6 +36,29 @@ def get_original_datasets():
         with open(os.path.join('data/original', file)) as f:
             fields[file[:-5]] = json.load(f)['fields']
     return {'data': fields}
+
+@app.route('/datasets/modified/', methods=['GET', 'POST'])
+def modified_datasets():
+    if request.method == 'GET':
+        files = os.listdir('data/modified')
+        return {'data': files}
+    if request.method == 'POST':
+        res = request.json
+        title = res['title']
+        data = res['data']
+        with open(os.path.join('data/modified', '.'.join([title, 'json'])), 'w') as f:
+            f.truncate(0)
+            json.dump(data, f)
+        return {'message': 'ok'}
+
+@app.route('/datasets/modified/<title>')
+def modified_dataset(title):
+    path = f'data/modified/{title}.json'
+    if not os.path.exists(path):
+        abort(404, description='File not found')
+    with open(path) as f:
+        data = json.load(f)
+    return {'data': data}
 
 def fetch_data(id, offset):
     r = requests.get(f'https://discover.data.vic.gov.au/api/3/action/datastore_search?offset={offset}&resource_id={id}')
